@@ -31,6 +31,11 @@ class JunctionView(Protocol):
 
 
 _OTHER = {"NS": "EW", "EW": "NS"}
+_EPS = 1e-9  # phase_time is a sum of float steps; compare with a tolerance
+
+
+def _reached(junction: JunctionView, seconds: float) -> bool:
+    return junction.phase_time >= seconds - _EPS
 
 
 class Controller:
@@ -63,7 +68,7 @@ class FixedTime(Controller):
         self.green = green
 
     def decide(self, junction: JunctionView) -> bool:
-        return junction.phase_time >= self.green
+        return _reached(junction, self.green)
 
 
 class Actuated(Controller):
@@ -85,11 +90,11 @@ class Actuated(Controller):
 
     def decide(self, junction: JunctionView) -> bool:
         axis = junction.green_axis
-        if axis is None or junction.phase_time < self.min_green:
+        if axis is None or not _reached(junction, self.min_green):
             return False
         if junction.queue_length(_OTHER[axis]) == 0:
             return False
-        if junction.phase_time >= self.max_green:
+        if _reached(junction, self.max_green):
             return True
         return junction.queue_length(axis) == 0 and junction.time_since_arrival(axis) >= self.gap
 
@@ -118,12 +123,12 @@ class MaxPressure(Controller):
 
     def decide(self, junction: JunctionView) -> bool:
         axis = junction.green_axis
-        if axis is None or junction.phase_time < self.min_green:
+        if axis is None or not _reached(junction, self.min_green):
             return False
         waiting = junction.queue_length(_OTHER[axis])
         if waiting == 0:
             return False
-        if junction.phase_time >= self.max_green:
+        if _reached(junction, self.max_green):
             return True
         return waiting > self.ratio * junction.queue_length(axis) + self.threshold
 
@@ -160,7 +165,7 @@ class Webster(Controller):
 
     def decide(self, junction: JunctionView) -> bool:
         axis = junction.green_axis
-        return axis is not None and junction.phase_time >= self._green[axis]
+        return axis is not None and _reached(junction, self._green[axis])
 
 
 #: Registry of available controllers by name.

@@ -64,3 +64,47 @@ def test_module_entry_point() -> None:
         [sys.executable, "-m", "greenwave", "--version"], capture_output=True, text=True, check=True
     )
     assert __version__ in result.stdout
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["benchmark", "--duration", "inf"],
+        ["benchmark", "--duration", "nan"],
+        ["benchmark", "--seeds", "0"],
+        ["benchmark", "--demand", "inf"],
+        ["benchmark", "--demand", "nan,0.1"],
+        ["webster", "--flows", "1,2,3"],
+        ["webster", "--flows", "a,b,c,d"],
+        ["webster", "--flows", "-5,1,1,1"],
+        ["webster", "--lost-time", "-5"],
+        ["webster", "--min-cycle", "90", "--max-cycle", "60"],
+        ["sweep", "--levels", "1"],
+        ["sweep", "--split", "nan"],
+    ],
+)
+def test_bad_input_gives_clean_usage_error(argv: list[str], capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(argv)
+    assert exc.value.code == 2
+    assert "error:" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [["--duration", "nan"], ["--duration", "-1"], ["--speed", "0"], ["--speed", "inf"], ["--demand", "inf"]],
+)
+def test_live_rejects_bad_numbers(argv: list[str]) -> None:
+    from greenwave import live
+
+    with pytest.raises(SystemExit) as exc:
+        live.main(["--frames", "1", *argv])
+    assert exc.value.code == 2
+
+
+def test_live_demand_uses_benchmark_order() -> None:
+    from greenwave import live
+
+    args = live.build_parser().parse_args(["--demand", "0.4,0.3,0.2,0.1"])
+    assert args.demand == {"N": 0.4, "S": 0.3, "E": 0.2, "W": 0.1}
+    assert live.build_parser().parse_args(["--demand", "0.2,0.05"]).demand["W"] == 0.05

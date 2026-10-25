@@ -72,3 +72,14 @@ def test_adaptive_controllers_beat_fixed_under_asymmetric_demand(smart: str) -> 
     fixed, other = benchmark(["fixed", smart], ASYMMETRIC, duration=1800, seeds=(1, 2, 3))
     assert other.avg_delay < fixed.avg_delay * 0.6
     assert other.throughput_per_hour >= fixed.throughput_per_hour
+
+
+@pytest.mark.parametrize(
+    "ctl, seconds",
+    [(FixedTime(green=0.3), 0.3), (Actuated(min_green=0.3, max_green=0.7), 0.7), (MaxPressure(0.3, 0.7), 0.7)],
+)
+def test_boundaries_tolerate_float_accumulation(ctl, seconds: float) -> None:
+    # 0.1 + 0.1 + 0.1 == 0.30000000000000004 but 7 x 0.1 == 0.7000000000000001; sums can
+    # also land just *below* the boundary, which used to cost an extra step.
+    below = sum([0.1] * round(seconds * 10)) - 1e-12
+    assert ctl.decide(FakeJunction("NS", below, {"NS": 5, "EW": 5}, gap=0))

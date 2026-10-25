@@ -16,6 +16,7 @@ Runs are fully deterministic for a given seed.
 
 from __future__ import annotations
 
+import math
 import random
 from collections import deque
 from dataclasses import dataclass
@@ -165,10 +166,21 @@ class Junction:
         self._max_queue = max(self._max_queue, *queued)
 
     def run(self, duration: float, dt: float = 0.5) -> Metrics:
-        """Simulate ``duration`` seconds and return the resulting metrics."""
-        steps = round(duration / dt)
+        """Simulate ``duration`` seconds and return the resulting metrics.
+
+        A final partial step covers any remainder, so exactly ``duration``
+        seconds are simulated even when it is not a multiple of ``dt``.
+        """
+        if not (math.isfinite(duration) and duration >= 0):
+            raise ValueError("duration must be finite and non-negative")
+        if not (math.isfinite(dt) and dt > 0):
+            raise ValueError("dt must be finite and positive")
+        steps = int(duration / dt + _EPS)
         for _ in range(steps):
             self.step(dt)
+        remainder = duration - steps * dt
+        if remainder > _EPS:
+            self.step(remainder)
         return self.metrics()
 
     def metrics(self) -> Metrics:
@@ -260,8 +272,8 @@ def _normalise_demand(demand: Mapping[str, float]) -> dict[str, float]:
     if unknown:
         raise ValueError(f"unknown approaches in demand: {sorted(unknown)}")
     result = {a: float(demand.get(a, 0.0)) for a in APPROACHES}
-    if any(rate < 0 for rate in result.values()):
-        raise ValueError("demand rates must be non-negative")
+    if any(not math.isfinite(rate) or rate < 0 for rate in result.values()):
+        raise ValueError("demand rates must be finite and non-negative")
     return result
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -26,8 +27,8 @@ def parse_demand(text: str) -> dict[str, float]:
         values = [float(v) for v in text.split(",")]
     except ValueError:
         raise argparse.ArgumentTypeError(f"invalid demand {text!r}: expected comma-separated numbers") from None
-    if any(v < 0 for v in values):
-        raise argparse.ArgumentTypeError("demand must be non-negative")
+    if any(not math.isfinite(v) or v < 0 for v in values):
+        raise argparse.ArgumentTypeError("demand must be finite and non-negative")
     if len(values) == 1:
         return {a: values[0] for a in APPROACHES}
     if len(values) == 2:
@@ -50,11 +51,22 @@ def parse_controllers(text: str) -> list[str]:
 def _positive(kind: type[float] | type[int]):
     def convert(text: str) -> float | int:
         value = kind(text)
-        if value <= 0:
-            raise argparse.ArgumentTypeError(f"must be positive, got {text}")
+        if not math.isfinite(value) or value <= 0:
+            raise argparse.ArgumentTypeError(f"must be a positive finite number, got {text}")
         return value
 
     return convert
+
+
+def parse_flows(text: str) -> list[float]:
+    """Parse ``--flows N,S,E,W`` (veh/h): four finite, non-negative numbers."""
+    try:
+        values = [float(v) for v in text.split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid flows {text!r}: expected four numbers N,S,E,W") from None
+    if len(values) != 4 or any(not math.isfinite(v) or v < 0 for v in values):
+        raise argparse.ArgumentTypeError("flows need four finite, non-negative numbers: N,S,E,W")
+    return values
 
 
 def _fraction(text: str) -> float:
@@ -267,7 +279,7 @@ def build_parser() -> argparse.ArgumentParser:
     web = sub.add_parser("webster", help="compute a Webster-optimal fixed-time plan")
     web.add_argument(
         "--flows",
-        type=lambda s: [float(v) for v in s.split(",")],
+        type=parse_flows,
         default=[600.0, 540.0, 300.0, 320.0],
         help="arrival flows N,S,E,W in veh/h (default 600,540,300,320)",
     )
@@ -318,9 +330,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command is None:
         parser.print_help()
         return 0
-    if args.command == "webster" and len(args.flows) != 4:
-        parser.error("--flows needs four values: N,S,E,W")
-    return args.func(args)
+    try:
+        return args.func(args)
+    except ValueError as exc:  # invalid combinations, e.g. --min-cycle > --max-cycle
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":  # pragma: no cover

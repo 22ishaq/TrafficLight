@@ -112,3 +112,22 @@ def test_benchmark_returns_one_result_per_controller() -> None:
     results = benchmark(["fixed", "webster"], duration=600, seeds=(1, 2))
     assert [r.controller for r in results] == ["fixed", "webster"]
     assert all(r.duration == pytest.approx(600) for r in results)
+
+
+def test_run_covers_exact_duration_when_not_multiple_of_dt() -> None:
+    assert Junction("fixed", seed=1).run(1.2, dt=0.5).duration == pytest.approx(1.2)
+    assert Junction("fixed", seed=1).run(0.3, dt=0.1).duration == pytest.approx(0.3)
+    assert Junction("fixed", seed=1).run(0).duration == 0
+
+
+@pytest.mark.parametrize("duration", [float("inf"), float("nan"), -1.0])
+def test_run_rejects_bad_duration(duration: float) -> None:
+    with pytest.raises(ValueError):
+        Junction("fixed").run(duration)
+
+
+@pytest.mark.parametrize("rate", [float("inf"), float("nan")])
+def test_non_finite_demand_is_rejected(rate: float) -> None:
+    # inf used to spin forever drawing zero-length gaps; nan silently meant "no traffic".
+    with pytest.raises(ValueError):
+        Junction(demand={"N": rate})

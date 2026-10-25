@@ -223,13 +223,22 @@ def render_frame(junction: Junction, controller_name: str, color: bool = True) -
 
 
 def _parse_demand(text: str) -> dict[str, float]:
-    try:
-        values = [float(v) for v in text.split(",")]
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"demand must be four numbers N,E,S,W, got {text!r}") from None
-    if len(values) != 4 or any(v < 0 for v in values):
-        raise argparse.ArgumentTypeError("demand must be four non-negative veh/s rates: N,E,S,W")
-    return dict(zip(APPROACHES, values))
+    # Same format as ``greenwave benchmark --demand`` (1, 2 or 4 values, N,S,E,W order).
+    from .cli import parse_demand
+
+    return parse_demand(text)
+
+
+def _seconds(positive: bool):
+    def convert(text: str) -> float:
+        value = float(text)
+        if not math.isfinite(value) or value < 0 or (positive and value == 0):
+            raise argparse.ArgumentTypeError(
+                f"must be a {'positive' if positive else 'non-negative'} finite number, got {text}"
+            )
+        return value
+
+    return convert
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -237,13 +246,13 @@ def build_parser() -> argparse.ArgumentParser:
         prog="greenwave live", description="Animate a simulated junction in the terminal."
     )
     parser.add_argument("--controller", choices=sorted(CONTROLLERS), default="actuated")
-    parser.add_argument("--speed", type=float, default=10.0,
+    parser.add_argument("--speed", type=_seconds(positive=True), default=10.0,
                         help="simulated seconds per real second (default: 10)")
-    parser.add_argument("--duration", type=float, default=600.0,
+    parser.add_argument("--duration", type=_seconds(positive=False), default=600.0,
                         help="simulated seconds to run (default: 600)")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--demand", type=_parse_demand, default=None, metavar="N,E,S,W",
-                        help="arrival rates in vehicles per second")
+    parser.add_argument("--demand", type=_parse_demand, default=None, metavar="N,S,E,W",
+                        help="arrival rates in veh/s: one value, NS,EW or N,S,E,W (as in benchmark)")
     parser.add_argument("--frames", type=int, default=None, metavar="N",
                         help="print N frames without sleeping or clearing, then exit")
     parser.add_argument("--no-color", dest="color", action="store_false", help="disable ANSI colours")
@@ -273,9 +282,6 @@ def main(argv: Sequence[str] | None = None, out: TextIO | None = None) -> int:
     """Run the live view. Returns a process exit code."""
     args = build_parser().parse_args(argv)
     out = out or sys.stdout
-    if args.speed <= 0:
-        print("--speed must be positive", file=sys.stderr)
-        return 2
     junction = Junction(args.controller, args.demand, seed=args.seed)
     name = junction.controller.name
     sim_per_frame = args.speed * FRAME_INTERVAL
