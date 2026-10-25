@@ -167,8 +167,13 @@ greenwave/           Python package (stdlib only)
   report.py          Demand sweep + hand-drawn SVG chart
   cli.py             `greenwave` command line
 tests/               pytest suite
+examples/            Write your own controller (longest-wait-first) in ~50 lines
 legacy/              The original 2-file turtle script, kept for posterity
 ```
+
+## Write your own controller
+
+[`examples/custom_controller.py`](examples/custom_controller.py) shows how to add a *longest-wait-first* controller and benchmark it against the built-in ones. It ties actuated control on average delay and has the lowest worst-case delay of all five. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to add a controller to both engines.
 
 ## History
 
