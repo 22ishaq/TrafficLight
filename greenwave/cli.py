@@ -9,7 +9,7 @@ import math
 import os
 import sys
 from pathlib import Path
-from typing import Sequence, TextIO
+from typing import Callable, Sequence, TextIO
 
 from . import __version__
 from .controllers import CONTROLLERS
@@ -48,7 +48,7 @@ def parse_controllers(text: str) -> list[str]:
     return names
 
 
-def _positive(kind: type[float] | type[int]):
+def _positive(kind: type[float] | type[int]) -> Callable[[str], float]:
     def convert(text: str) -> float | int:
         value = kind(text)
         if not math.isfinite(value) or value <= 0:
@@ -331,7 +331,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.print_help()
         return 0
     try:
-        return args.func(args)
+        return int(args.func(args))
     except ValueError as exc:  # invalid combinations, e.g. --min-cycle > --max-cycle
         parser.error(str(exc))
 

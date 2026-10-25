@@ -21,7 +21,7 @@ import math
 import re
 import sys
 import time
-from typing import Sequence, TextIO
+from typing import Callable, Sequence, TextIO
 
 from .controllers import CONTROLLERS
 from .metrics import Metrics
@@ -229,7 +229,7 @@ def _parse_demand(text: str) -> dict[str, float]:
     return parse_demand(text)
 
 
-def _seconds(positive: bool):
+def _seconds(positive: bool) -> Callable[[str], float]:
     def convert(text: str) -> float:
         value = float(text)
         if not math.isfinite(value) or value < 0 or (positive and value == 0):

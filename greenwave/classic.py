@@ -196,6 +196,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     crossing = PelicanCrossing(timings)
 
     try:
+        import tkinter  # turtle's backend; imported for TclError
         import turtle
     except ImportError as exc:  # pragma: no cover - depends on the host Python build
         print(f"GreenWave Classic needs tkinter/turtle, which is unavailable: {exc}")
@@ -276,7 +277,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             render()
             screen.ontimer(loop, TICK_MS)
-        except (turtle.Terminator, turtle.TK.TclError):  # window closed mid-frame
+        except (turtle.Terminator, tkinter.TclError):  # window closed mid-frame
             pass
 
     def quit_app() -> None:
