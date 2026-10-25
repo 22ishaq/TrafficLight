@@ -51,13 +51,15 @@ export class ActuatedController {
 }
 
 /**
- * Max-pressure (adaptive): serve the axis with the larger queue. Switches when
- * the waiting axis' pressure exceeds the green axis' by a threshold, or after
- * a maximum green so nobody starves.
+ * Max-pressure (adaptive): serve the axis with more vehicles waiting. Switches
+ * when the red axis' pressure exceeds twice the green axis' plus a threshold
+ * (so busy roads get long, efficient greens), or after a maximum green so
+ * nobody starves.
  */
 export class MaxPressureController {
-  constructor({ minGreen = 8, maxGreen = 60, threshold = 2 } = {}) {
+  constructor({ minGreen = 8, maxGreen = 60, threshold = 2, ratio = 2 } = {}) {
     this.id = 'maxpressure';
+    this.ratio = ratio;
     this.minGreen = minGreen;
     this.maxGreen = maxGreen;
     this.threshold = threshold;
@@ -70,7 +72,8 @@ export class MaxPressureController {
     if (sim.demandOnAxis(other) === 0) return 'hold'; // nobody waiting: rest in green
     if (phaseTime >= this.maxGreen) return 'switch';
     if (sim.demandOnAxis(axisGreen) === 0) return 'switch'; // green road is empty
-    return sim.pressure(other) - sim.pressure(axisGreen) > this.threshold ? 'switch' : 'hold';
+    // Relative margin: with both roads busy, keep green long enough to be worth the inter-green.
+    return sim.pressure(other) > this.ratio * sim.pressure(axisGreen) + this.threshold ? 'switch' : 'hold';
   }
 }
 

@@ -52,6 +52,8 @@ python -m pytest -q
 
 ## Web playground
 
+<p align="center"><img src="docs/demo.gif" alt="Animated demo: pedestrians cross on an all-red scramble, then an ambulance pre-empts the signals and the E/W road gets green" width="760"></p>
+
 | Key | Action |
 |---|---|
 | `Space` | Pause / resume |

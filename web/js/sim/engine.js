@@ -90,6 +90,7 @@ export class Simulation {
     this._lanes = { N: [], E: [], S: [], W: [] }; // front-most vehicle first
     this._pending = { N: 0, E: 0, S: 0, W: 0 }; // arrivals that could not enter yet
     this._pendingEmergency = { N: 0, E: 0, S: 0, W: 0 };
+    this._pendingSince = { N: [], E: [], S: [], W: [] }; // arrival times of blocked arrivals
     this._nextArrival = {};
     for (const a of APPROACHES) this._nextArrival[a] = this.rng.exponential(this.demand[a]);
     this._phaseCounter = 0;
@@ -235,16 +236,26 @@ export class Simulation {
     return n;
   }
 
-  /** Pressure used by max-pressure control: queued + half the moving vehicles within 60 m. */
+  /** Longest current wait (s) of any vehicle yet to cross the stop line on an axis. */
+  oldestWait(axis) {
+    let w = 0;
+    for (const a of AXIS_APPROACHES[axis]) {
+      if (this._pendingSince[a].length) w = Math.max(w, this.time - this._pendingSince[a][0]);
+      for (const v of this._lanes[a]) if (v.pos < STOP_LINE && v.waitTime > w) w = v.waitTime;
+    }
+    return w;
+  }
+
+  /**
+   * Pressure used by max-pressure control: vehicles on the axis still upstream
+   * of the stop line. Arrivals blocked off-road are excluded so a saturated
+   * road cannot build unbounded pressure and starve the other.
+   */
   pressure(axis) {
     let p = 0;
     for (const a of AXIS_APPROACHES[axis]) {
-      p += this._pending[a] + this._pendingEmergency[a];
-      for (const v of this._lanes[a]) {
-        if (v.pos >= STOP_LINE) continue;
-        if (v.speed < QUEUE_SPEED) p += 1;
-        else if (v.pos >= STOP_LINE - 60) p += 0.5;
-      }
+      p += this._pendingEmergency[a];
+      for (const v of this._lanes[a]) if (v.pos < STOP_LINE) p++;
     }
     return p;
   }
@@ -258,6 +269,12 @@ export class Simulation {
     let n = this.stats.served;
     let maxWait = this._maxWaitServed;
     for (const a of APPROACHES) {
+      for (const since of this._pendingSince[a]) {
+        const w = this.time - since;
+        sum += w;
+        n++;
+        if (w > maxWait) maxWait = w;
+      }
       for (const v of this._lanes[a]) {
         if (v.pos < STOP_LINE) {
           sum += v.waitTime;
@@ -298,6 +315,7 @@ export class Simulation {
     for (const a of APPROACHES) {
       while (this.time >= this._nextArrival[a]) {
         this._pending[a]++;
+        this._pendingSince[a].push(this._nextArrival[a]);
         this.stats.spawned++;
         this._nextArrival[a] += this.rng.exponential(this.demand[a]);
       }
@@ -313,9 +331,15 @@ export class Simulation {
       return; // entry occupied — the arrival waits off-road
     }
     const emergency = this._pendingEmergency[a] > 0;
+    let blockedFor = 0;
     if (emergency) this._pendingEmergency[a]--;
-    else this._pending[a]--;
+    else {
+      this._pending[a]--;
+      blockedFor = this.time - this._pendingSince[a].shift();
+    }
     const v = this._makeVehicle(a, emergency);
+    // Time spent queued off-road (lane full back to the entry) counts as waiting.
+    if (blockedFor > 1) v.waitTime = blockedFor;
     if (last) {
       // Enter no faster than is safe behind the previous vehicle.
       const gap = last.pos - last.length;
@@ -578,6 +602,7 @@ export class Simulation {
     let maxCurrentWait = 0;
     for (const a of APPROACHES) {
       let q = this._pending[a] + this._pendingEmergency[a];
+      if (this._pendingSince[a].length) maxCurrentWait = Math.max(maxCurrentWait, this.time - this._pendingSince[a][0]);
       for (const v of this._lanes[a]) {
         if (v.pos < STOP_LINE) {
           if (v.speed < QUEUE_SPEED) q++;
