@@ -40,7 +40,7 @@ git clone https://github.com/22ishaq/TrafficLight.git && cd TrafficLight
 # 2. Python engine + CLI
 pip install -e ".[dev]"
 greenwave benchmark --duration 3600 --seeds 5
-greenwave webster --flows 0.12,0.12,0.08,0.08
+greenwave webster --flows 432,432,288,288   # veh/h N,S,E,W -> optimum cycle 53.3 s
 greenwave live --controller maxpressure     # animated junction in the terminal
 greenwave sweep --out docs/sweep.svg        # delay-vs-demand chart (SVG)
 greenwave classic                            # needs Tk (python3-tk on Linux)
