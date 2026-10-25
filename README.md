@@ -23,7 +23,7 @@ GreenWave has four parts, and all of them use the UK signal sequence (red → re
 | 🌐 **Web playground** | An animated four-way junction in the browser (left-hand traffic). Vehicles follow each other using the Intelligent Driver Model. You can swap controllers while it runs, press the pedestrian button, send in an ambulance, and see live charts and a benchmark table. | `cd web && python3 -m http.server` → <http://localhost:8000> |
 | 🐍 **Python research engine** | A fast, seeded queue simulation that runs hours of traffic in milliseconds. It compares Fixed-time, Webster, Actuated and Max-Pressure control. | `python -m greenwave benchmark` |
 | 🖥️ **Terminal view** | An animated ANSI drawing of the junction in your terminal, with live signal heads, queues and metrics. | `python -m greenwave live` |
-| 🕹️ **Classic mode** | The original turtle traffic light, rebuilt as a UK pelican crossing with a push-button, WAIT lamp, green man and flashing amber. | `python -m greenwave classic` |
+| 🕹️ **Classic mode** | The original turtle traffic light, rebuilt as a UK pelican crossing with a push-button, WAIT lamp, green man and flashing amber. It runs in turtle or in the browser. | `python -m greenwave classic` or `web/classic.html` |
 
 No runtime dependencies. The web app needs no build step and the Python package uses only the standard library.
 
@@ -73,6 +73,18 @@ What the playground does:
 - **Benchmark**: one button runs every controller against identical traffic and highlights the winner.
 
 To host the playground on **GitHub Pages**, go to *Settings → Pages* and set the source to **GitHub Actions**. Then run the *Deploy playground to Pages* workflow from the Actions tab. The `web/` folder is served as-is.
+
+## Classic mode: the pelican crossing
+
+The original project was a button-triggered traffic light, so classic mode is a faithful UK **pelican crossing**:
+1. Traffic rests on green until someone presses the button.
+2. After a minimum green, the light turns steady amber.
+3. Next comes all-red clearance, then red for traffic while pedestrians get the green man.
+4. Last, traffic sees flashing amber while pedestrians see a flashing green man. Drivers may go only if the crossing is clear.
+
+The state machine (`greenwave/pelican.py`) is pure and unit-tested. It drives a turtle GUI and an identical browser port (`web/classic.html`), and the two produce the same results for the same button presses and timings.
+
+<p align="center"><img src="docs/screenshot-classic.png" alt="Browser pelican crossing: red light for traffic, green man lit, push-button box with WAIT lamp, zig-zag road markings" width="760"></p>
 
 ## Signal control strategies
 
