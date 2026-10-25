@@ -1,6 +1,7 @@
 // GreenWave UI: wires the controls and stats panel to the simulation engine and runs the animation loop.
 import { Simulation, APPROACHES } from './sim/engine.js';
 import { runBenchmark } from './sim/benchmark.js';
+import { Rng } from './sim/rng.js';
 import { JunctionRenderer } from './render.js';
 import { LineChart, SignalTimeline, clock } from './charts.js';
 
@@ -95,13 +96,26 @@ function pressPedestrian() {
   sim.requestPedestrian();
   $('waitLamp').classList.add('on');
 }
+// UI-side randomness (emergency approach) gets its own seeded stream so seeded runs reproduce
+// without disturbing the simulation's traffic stream.
+let uiRng = new Rng(sim.seed ^ 0x9e3779b9);
 function sendEmergency() {
-  const a = APPROACHES[Math.floor(Math.random() * APPROACHES.length)];
-  sim.spawnEmergency(a);
+  sim.spawnEmergency(uiRng.pick(APPROACHES));
 }
-function manualSwitch() { sim.manualSwitch(); }
+function manualSwitch() {
+  if (sim.manualSwitch()) return;
+  // Rejected (not in manual mode, or not during a green phase): shake and explain briefly.
+  const btn = $('manualBtn');
+  btn.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' },
+    { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 320 });
+  if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+  btn.textContent = sim.controllerName === 'manual' ? 'Wait for green…' : 'Manual mode only';
+  clearTimeout(btn._hintTimer);
+  btn._hintTimer = setTimeout(() => { btn.textContent = btn.dataset.label; }, 1200);
+}
 function resetSim() {
   sim.reset(Math.floor(Math.random() * 1e9));
+  uiRng = new Rng(sim.seed ^ 0x9e3779b9);
   tlNS.reset(); tlEW.reset();
   lastEventKey = '';
   updatePanel(true);
@@ -124,7 +138,9 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => re
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const tag = e.target?.tagName;
-  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  const isRange = tag === 'INPUT' && e.target.type === 'range';
+  if ((tag === 'INPUT' && !isRange) || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if (isRange && e.key.startsWith('Arrow')) return; // arrows belong to the slider
   const k = e.key.toLowerCase();
   if (k === ' ') { e.preventDefault(); setSpeed(speed > 0 ? 0 : lastSpeed); }
   else if (k >= '1' && k <= '4') setController(CONTROLLERS[Number(k) - 1]);
@@ -243,7 +259,7 @@ function updatePanel() {
   toast.hidden = ped === 'dont_walk';
   toast.textContent = ped === 'walk' ? 'Green man — pedestrians crossing' : 'Crossing closing';
 
-  $('emergencyBtn').querySelector('.siren').classList.toggle('on', sim.vehicles.some((v) => v.emergency));
+  $('emergencyBtn').querySelector('.siren').classList.toggle('on', !!sim.signal.preempt || sim.vehicles.some((v) => v.emergency));
 
   // event log (newest first)
   const ev = sim.events || [];
