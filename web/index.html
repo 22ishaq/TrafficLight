@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GreenWave — Traffic Signal Simulator</title>
+  <meta name="description" content="Interactive traffic signal simulator: compare fixed-time, actuated and max-pressure control at a UK four-way junction.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='9' y='1' width='14' height='30' rx='5' fill='%23111827'/%3E%3Ccircle cx='16' cy='8' r='4' fill='%23ef4444'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23f59e0b'/%3E%3Ccircle cx='16' cy='24' r='4' fill='%2322c55e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="9" y="1" width="14" height="30" rx="5" fill="currentColor" opacity=".9"/>
+        <circle cx="16" cy="8" r="4" fill="var(--lamp-red)"/>
+        <circle cx="16" cy="16" r="4" fill="var(--lamp-amber)"/>
+        <circle cx="16" cy="24" r="4" fill="var(--lamp-green)"/>
+      </svg>
+      <div>
+        <h1>GreenWave</h1>
+        <p class="tagline">Traffic signal simulator · UK four-way junction</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="clock" id="simClock" aria-live="off" title="Simulated time">00:00</span>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light / dark theme" title="Toggle theme (T)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage card" aria-label="Junction view">
+      <div class="stage-head">
+        <div class="phase">
+          <span class="phase-dot" id="phaseDot"></span>
+          <span id="phaseName">—</span>
+          <span class="muted" id="phaseTime"></span>
+        </div>
+        <div class="muted small" id="controllerLabel">Actuated</div>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="junction" role="img" aria-label="Top-down animated view of a four-way junction with traffic lights, vehicles and pedestrians"></canvas>
+        <div class="ped-toast" id="pedToast" hidden>Pedestrians crossing</div>
+      </div>
+      <div class="timeline" aria-label="Signal history, last two minutes">
+        <div class="timeline-row"><span class="tl-label">N/S</span><canvas id="tlNS" height="14"></canvas></div>
+        <div class="timeline-row"><span class="tl-label">E/W</span><canvas id="tlEW" height="14"></canvas></div>
+      </div>
+      <ol class="events" id="events" aria-label="Recent events" aria-live="polite"></ol>
+    </section>
+
+    <aside class="panel" aria-label="Controls and statistics">
+      <section class="card">
+        <h2>Control</h2>
+        <label class="field">
+          <span>Signal controller</span>
+          <select id="controllerSel">
+            <option value="fixed">Fixed-time (30 s)</option>
+            <option value="actuated" selected>Actuated (gap-out)</option>
+            <option value="maxpressure">Max-pressure (adaptive)</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+
+        <div class="field">
+          <span id="speedLabel">Simulation speed</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="speedLabel" id="speedGroup">
+            <button type="button" role="radio" data-speed="0" aria-checked="false" title="Pause (Space)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg><span class="sr-only">Pause</span>
+            </button>
+            <button type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
+            <button type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
+            <button type="button" role="radio" data-speed="4" aria-checked="false">4×</button>
+            <button type="button" role="radio" data-speed="8" aria-checked="false">8×</button>
+          </div>
+        </div>
+
+        <div class="btn-grid">
+          <button type="button" class="btn ped-btn" id="pedBtn" title="Pedestrian push-button (P)">
+            <span class="wait-lamp" id="waitLamp" aria-hidden="true">WAIT</span>
+            <span>Push button</span>
+          </button>
+          <button type="button" class="btn" id="emergencyBtn" title="Send an emergency vehicle (E)">
+            <span class="siren" aria-hidden="true"></span>Emergency
+          </button>
+          <button type="button" class="btn" id="manualBtn" title="Switch green axis (M)" disabled>Switch axis</button>
+          <button type="button" class="btn ghost" id="resetBtn" title="Reset (R)">Reset</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Demand <span class="muted small">vehicles / minute</span></h2>
+        <div class="sliders" id="sliders"></div>
+      </section>
+
+      <section class="card">
+        <h2>Live stats</h2>
+        <div class="tiles">
+          <div class="tile"><span class="tile-label">Avg wait</span><span class="tile-value" id="statAvgWait">0.0<small>s</small></span></div>
+          <div class="tile"><span class="tile-label">Throughput</span><span class="tile-value" id="statThroughput">0<small>/min</small></span></div>
+          <div class="tile"><span class="tile-label">Max wait</span><span class="tile-value" id="statMaxWait">0<small>s</small></span></div>
+          <div class="tile"><span class="tile-label">Served</span><span class="tile-value" id="statServed">0</span></div>
+        </div>
+        <div class="queues" id="queues" aria-label="Queue length per approach"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Over time</h2>
+          <div class="legend">
+            <span><i class="sw sw-queue"></i>Avg queue</span>
+            <span><i class="sw sw-wait"></i>Avg wait</span>
+          </div>
+        </div>
+        <canvas id="chart" class="chart" height="150" role="img" aria-label="Line chart of average queue length and average wait over time"></canvas>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Benchmark</h2>
+          <button type="button" class="btn primary small-btn" id="benchBtn">Run</button>
+        </div>
+        <p class="muted small" id="benchNote">15 simulated minutes × 3 seeds per controller, same traffic for each, at the current demand.</p>
+        <div id="benchResult" aria-live="polite"></div>
+      </section>
+
+      <p class="shortcuts muted small">
+        <kbd>Space</kbd> pause · <kbd>1</kbd>–<kbd>4</kbd> controller · <kbd>P</kbd> push button · <kbd>E</kbd> emergency · <kbd>M</kbd> switch · <kbd>R</kbd> reset · <kbd>T</kbd> theme
+      </p>
+    </aside>
+  </main>
+
+  <footer class="foot muted small">
+    GreenWave · drive-on-the-left, UK signal sequence (red → red+amber → green → amber) · <a href="https://github.com/22ishaq/TrafficLight">source on GitHub</a>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
