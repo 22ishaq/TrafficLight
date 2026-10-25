@@ -7,6 +7,7 @@
 [![CI](https://github.com/22ishaq/TrafficLight/actions/workflows/ci.yml/badge.svg)](https://github.com/22ishaq/TrafficLight/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-3776ab)
 ![Zero dependencies](https://img.shields.io/badge/runtime%20deps-0-2ea44f)
+![Typed: mypy strict](https://img.shields.io/badge/mypy-strict-1f5082)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
 <picture>
