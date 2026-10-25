@@ -303,9 +303,11 @@ const wrap = $('canvasWrap');
 new ResizeObserver(() => { renderer.resize(); renderer.draw(sim, performance.now() / 1000); }).observe(wrap);
 
 if (params.get('scenario')) applyScenario(params.get('scenario'));
-const warmup = Number(params.get('warmup')) || 0;
+// Clamp URL params so a hand-edited link can't freeze the tab.
+const clampParam = (v, lo, hi) => (Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : 0);
+const warmup = clampParam(Number(params.get('warmup')), 0, 3600);
 if (warmup > 0) sim.step(warmup);
-if (params.get('speed')) setSpeed(Number(params.get('speed')));
+if (params.get('speed')) setSpeed(clampParam(Number(params.get('speed')), 0, 16));
 setController(sim.controllerName || 'actuated');
 
 let last = performance.now();
