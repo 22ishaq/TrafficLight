@@ -84,7 +84,7 @@ The original project was a button-triggered traffic light, so classic mode is a 
 3. Next comes all-red clearance, then red for traffic while pedestrians get the green man.
 4. Last, traffic sees flashing amber while pedestrians see a flashing green man. Drivers may go only if the crossing is clear.
 
-The state machine (`greenwave/pelican.py`) is pure and unit-tested. It drives a turtle GUI and an identical browser port (`web/classic.html`), and the two produce the same results for the same button presses and timings.
+The state machine (`greenwave/pelican.py`) is pure and unit-tested. It drives both the turtle GUI and a browser port (`web/classic.html`). A shared golden-trace test (`tests/fixtures/pelican_trace.json`) replays the same button presses through Python and JavaScript, so the two cannot drift apart.
 
 <p align="center"><img src="docs/screenshot-classic.png" alt="Browser pelican crossing: red light for traffic, green man lit, push-button box with WAIT lamp, zig-zag road markings" width="760"></p>
 
@@ -174,6 +174,7 @@ greenwave/           Python package (stdlib only)
   cli.py             `greenwave` command line
 tests/               pytest suite
 examples/            Write your own controller (longest-wait-first)
+tools/               Golden-trace generator for the cross-language parity test
 legacy/              The original single-file turtle script, kept for posterity
 ```
 
