@@ -9,7 +9,10 @@
 ![Zero dependencies](https://img.shields.io/badge/runtime%20deps-0-2ea44f)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
-![GreenWave web playground](docs/screenshot.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
+  <img alt="GreenWave web playground: a top-down UK junction with signal heads, queues, live stats and controls" src="docs/screenshot.png">
+</picture>
 
 </div>
 
@@ -32,7 +35,7 @@ No runtime dependencies. The web app needs no build step and the Python package 
 git clone https://github.com/22ishaq/TrafficLight.git && cd TrafficLight
 
 # 1. Web playground (any static server works)
-cd web && python3 -m http.server 8000      # open http://localhost:8000
+(cd web && python3 -m http.server 8000)    # open http://localhost:8000
 
 # 2. Python engine + CLI
 pip install -e ".[dev]"
@@ -44,7 +47,7 @@ greenwave classic                            # needs Tk (python3-tk on Linux)
 
 # Tests
 python -m pytest -q
-cd web && npm test                           # node --test, no install needed
+(cd web && npm test)                         # node --test, no install needed
 ```
 
 ## Web playground
@@ -66,6 +69,8 @@ What the playground does:
 - **Pedestrian scramble**: pressing the button brings in an all-red walk phase, followed by a flashing phase.
 - **Seeded and deterministic**: the same seed always produces the same traffic, so controller comparisons are fair.
 - **Benchmark**: one button runs every controller against identical traffic and highlights the winner.
+
+To host the playground on **GitHub Pages**, go to *Settings → Pages* and set the source to **GitHub Actions**. Then run the *Deploy playground to Pages* workflow from the Actions tab. The `web/` folder is served as-is.
 
 ## Signal control strategies
 
