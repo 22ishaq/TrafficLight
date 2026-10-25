@@ -89,7 +89,37 @@ stateDiagram-v2
 | **Actuated** | Minimum and maximum green times, with *gap-out* when no vehicle is approaching on the green axis. | Light or uneven traffic |
 | **Max-Pressure** | Gives green to whichever axis has the larger queue. This is decentralised and throughput-optimal (Varaiya, 2013). | Heavy or shifting demand |
 
-<!-- BENCHMARK -->
+### Benchmark
+
+This is the Python engine's output: 30 simulated minutes per run, averaged over 3 seeds. Every controller faces exactly the same arrivals.
+
+```
+$ greenwave benchmark --duration 1800 --seeds 3
+GreenWave benchmark · 1800 s simulated × 3 seed(s)
+demand  N 0.12  S 0.12  E 0.08  W 0.08 veh/s
+
+   Controller   Avg delay  Max delay   Throughput  Avg queue  Delay vs fixed
+─  ───────────  ─────────  ─────────  ───────────  ─────────  ──────────────
+   fixed           19.2 s       62 s  1,455 veh/h    7.9 veh        baseline
+★  actuated        15.2 s       59 s  1,453 veh/h    6.3 veh         -20.6 %
+   maxpressure     17.3 s       76 s  1,449 veh/h    7.1 veh          -9.8 %
+   webster         16.9 s       73 s  1,457 veh/h    6.9 veh         -12.0 %
+
+★ actuated wins: 21 % less delay than fixed.
+```
+
+When demand is lopsided, fixed-time control falls apart and the adaptive controllers reduce average delay by about three quarters:
+
+```
+$ greenwave benchmark --duration 1800 --seeds 3 --demand 0.2,0.18,0.05,0.06
+   Controller   Avg delay  Max delay   Throughput  Avg queue  Delay vs fixed
+   fixed           61.3 s      321 s  1,689 veh/h   30.3 veh        baseline
+★  actuated        15.8 s       62 s  1,745 veh/h    7.8 veh         -74.3 %
+   maxpressure     16.1 s       75 s  1,742 veh/h    8.0 veh         -73.8 %
+   webster         18.7 s      134 s  1,744 veh/h    9.2 veh         -69.5 %
+```
+
+<!-- SWEEP -->
 
 ## Project layout
 
