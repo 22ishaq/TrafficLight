@@ -70,6 +70,7 @@ What the playground does:
 - **Vehicle dynamics**: each car follows the one ahead using the [Intelligent Driver Model](https://en.wikipedia.org/wiki/Intelligent_driver_model). A car stops for amber only if it can do so comfortably, and once it is past the stop line it always clears the junction.
 - **Signal pre-emption**: an ambulance gets a green on its approach as soon as it is safe to give one. The other approach still goes through amber and all-red first.
 - **Pedestrian scramble**: pressing the button brings in an all-red walk phase, followed by a flashing phase.
+- **Scenario presets**: Balanced, Morning peak, Stadium event, Quiet night and Near gridlock. Each preset can also be opened with a link like `?scenario=morning`.
 - **Seeded and deterministic**: the same seed always produces the same traffic, so controller comparisons are fair.
 - **Benchmark**: one button runs the fixed, actuated and max-pressure controllers against identical traffic (15 simulated minutes × 3 seeds) and highlights the winner.
 
@@ -183,6 +184,10 @@ legacy/              The original single-file turtle script, kept for posterity
 ## History
 
 GreenWave began as [`legacy/trafficlight.py`](legacy/trafficlight.py), a turtle script that drew three lamps and cycled them when a button was clicked. The classic mode keeps that idea and turns it into a correct pelican crossing state machine. That rewrite also fixes several problems in the original: the click handler was never bound, the button's hit-box was the wrong size, a "3 second" amber actually lasted 6 s, the sequence was not the UK one (it had no red + amber), and a ~11-day `ontimer` delay stood in for "stay green".
+
+## Social preview
+
+To give the repository a link card, upload [`docs/social-preview.png`](docs/social-preview.png) (1280×640) under *Settings → General → Social preview*.
 
 ## License
 
