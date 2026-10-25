@@ -96,6 +96,7 @@ export class Simulation {
     this._phaseCounter = 0;
     this._manualRequest = false;
     this._pedRequested = false;
+    this._pedJustServed = false; // a scramble ran since the last green: next request waits for a green
     this._target = 'EW'; // axis to receive green after the current inter-green
     this._allRedDuration = TIMINGS.ALL_RED;
     this.signal = {
@@ -407,7 +408,9 @@ export class Simulation {
     this.signal.axisGreen = phase.endsWith('_GREEN') ? phase.slice(0, 2) : null;
     this._phaseCounter++;
     this.signal.phaseId = this._phaseCounter;
+    if (phase.endsWith('_GREEN')) this._pedJustServed = false;
     if (phase === 'PED_WALK') {
+      this._pedJustServed = true;
       this._pedRequested = false;
       this.signal.ped = false;
       this.stats.pedestrianPhases++;
@@ -457,7 +460,7 @@ export class Simulation {
       case 'ALL_RED':
         if (preempt) this._target = preempt;
         if (s.phaseTime >= this._allRedDuration) {
-          if (this._pedRequested && !preempt) this._setPhase('PED_WALK');
+          if (this._pedRequested && !preempt && !this._pedJustServed) this._setPhase('PED_WALK');
           else this._setPhase(`${this._target}_RED_AMBER`);
         }
         break;

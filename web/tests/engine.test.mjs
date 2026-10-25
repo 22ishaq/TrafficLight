@@ -270,3 +270,19 @@ test('summary() counts vehicles still waiting so starvation is visible', () => {
   assert.ok(s.avgQueue > 0 && s.throughputPerHour > 0);
   assert.throws(() => sim.spawnEmergency('X'));
 });
+
+test('repeated pedestrian presses cannot starve traffic of green', () => {
+  // Regression: a press during PED_FLASH used to chain scramble phases back to back forever.
+  const sim = new Simulation({ seed: 1, controller: 'actuated' });
+  let lastGreen = 0;
+  let maxNoGreen = 0;
+  for (let i = 0; i < 6000; i++) {
+    sim.requestPedestrian();
+    sim.step(0.1);
+    if (sim.signal.axisGreen) lastGreen = sim.time;
+    maxNoGreen = Math.max(maxNoGreen, sim.time - lastGreen);
+  }
+  assert.ok(maxNoGreen < 30, `traffic waited ${maxNoGreen.toFixed(1)} s without any green`);
+  assert.ok(sim.stats.served > 20, `only ${sim.stats.served} vehicles served`);
+  assert.ok(sim.stats.pedestrianPhases > 5, 'pedestrians are still served');
+});
