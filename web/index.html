@@ -59,6 +59,17 @@
       <section class="card">
         <h2>Control</h2>
         <label class="field">
+          <span>Scenario</span>
+          <select id="scenarioSel">
+            <option value="balanced" selected>Balanced</option>
+            <option value="morning">Morning peak (heavy N/S)</option>
+            <option value="stadium">Stadium event (heavy E/W)</option>
+            <option value="night">Quiet night</option>
+            <option value="gridlock">Near gridlock</option>
+            <option value="custom" disabled>Custom</option>
+          </select>
+        </label>
+        <label class="field">
           <span>Signal controller</span>
           <select id="controllerSel">
             <option value="fixed">Fixed-time (30 s)</option>

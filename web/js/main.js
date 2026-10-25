@@ -1,5 +1,5 @@
 // GreenWave UI: wires the controls and stats panel to the simulation engine and runs the animation loop.
-import { Simulation, APPROACHES } from './sim/engine.js';
+import { Simulation, APPROACHES, DEFAULT_DEMAND } from './sim/engine.js';
 import { runBenchmark } from './sim/benchmark.js';
 import { Rng } from './sim/rng.js';
 import { JunctionRenderer } from './render.js';
@@ -59,6 +59,7 @@ for (const b of speedButtons) b.addEventListener('click', () => setSpeed(Number(
 const DIR_NAME = { N: 'North', E: 'East', S: 'South', W: 'West' };
 const sliders = $('sliders');
 const outputs = {};
+const sliderCtl = {};
 for (const a of APPROACHES) {
   const row = document.createElement('div');
   row.className = 'slider-row';
@@ -77,10 +78,34 @@ for (const a of APPROACHES) {
   input.addEventListener('input', () => {
     paint();
     sim.setDemand(a, Number(input.value) / 60);
+    $('scenarioSel').value = 'custom';
   });
+  sliderCtl[a] = { input, paint };
   outputs[a] = out;
   sliders.append(row);
 }
+
+// scenario presets (vehicles/minute, like the sliders); null = engine defaults
+const SCENARIOS = {
+  balanced: null,
+  morning: { N: 14, S: 13, E: 3, W: 3.5 },
+  stadium: { N: 3, S: 3.5, E: 15, W: 14 },
+  night: { N: 1.5, S: 1.5, E: 1, W: 1 },
+  gridlock: { N: 12.5, S: 12.5, E: 11.5, W: 11.5 },
+};
+function applyScenario(name) {
+  if (!(name in SCENARIOS)) return;
+  const preset = SCENARIOS[name];
+  for (const a of APPROACHES) {
+    const perSec = preset ? preset[a] / 60 : DEFAULT_DEMAND[a];
+    sim.setDemand(a, perSec);
+    sliderCtl[a].input.value = String(Math.round(perSec * 60 * 2) / 2);
+    sliderCtl[a].paint();
+  }
+  $('scenarioSel').value = name;
+  if (name === 'night' && effectiveTheme() !== 'dark') toggleTheme();
+}
+$('scenarioSel').addEventListener('change', (e) => applyScenario(e.target.value));
 
 // queue bars
 const queueEls = {};
@@ -277,6 +302,7 @@ function updatePanel() {
 const wrap = $('canvasWrap');
 new ResizeObserver(() => { renderer.resize(); renderer.draw(sim, performance.now() / 1000); }).observe(wrap);
 
+if (params.get('scenario')) applyScenario(params.get('scenario'));
 const warmup = Number(params.get('warmup')) || 0;
 if (warmup > 0) sim.step(warmup);
 if (params.get('speed')) setSpeed(Number(params.get('speed')));
