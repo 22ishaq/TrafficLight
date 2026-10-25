@@ -260,3 +260,13 @@ test('vehicle objects expose the fields the renderer needs', () => {
   for (const k of ['throughput', 'avgWait', 'maxWait', 'served', 'spawned', 'emergencyServed']) assert.equal(typeof s[k], 'number', k);
   for (const a of APPROACHES) assert.equal(typeof s.queue[a], 'number');
 });
+
+test('summary() counts vehicles still waiting so starvation is visible', () => {
+  const sim = new Simulation({ seed: 6, controller: 'manual', demand: { N: 0.1, S: 0.1, E: 0.1, W: 0.1 } });
+  run(sim, 300, 1);
+  const s = sim.summary();
+  assert.ok(s.avgWait > sim.stats.avgWait, `${s.avgWait} > ${sim.stats.avgWait}`);
+  assert.ok(s.maxWait > 200, 'east/west traffic has been held at red the whole time');
+  assert.ok(s.avgQueue > 0 && s.throughputPerHour > 0);
+  assert.throws(() => sim.spawnEmergency('X'));
+});
