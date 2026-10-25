@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="460" viewBox="0 0 800 460" role="img" aria-labelledby="title desc" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title id="title">Average delay vs demand</title>
+<desc id="desc">GreenWave demand sweep: average vehicle delay in seconds for each signal controller as total junction demand rises from 400 to 2,880 vehicles per hour.</desc>
+<rect x="0.5" y="0.5" width="799" height="459" rx="14" ry="14" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+<text x="76" y="38" fill="#f1f5f9" font-size="20" font-weight="700">Average delay vs demand</text>
+<text x="76" y="60" fill="#94a3b8" font-size="13">60% of traffic on N/S · 1800 s × 3 seeds per point · lower is better</text>
+<line x1="76" y1="396.0" x2="610" y2="396.0" stroke="#1e293b" stroke-width="1" fill="none"/>
+<text x="66" y="400.0" fill="#94a3b8" font-size="12" text-anchor="end">0</text>
+<line x1="76" y1="292.0" x2="610" y2="292.0" stroke="#1e293b" stroke-width="1" fill="none"/>
+<text x="66" y="296.0" fill="#94a3b8" font-size="12" text-anchor="end">50</text>
+<line x1="76" y1="188.0" x2="610" y2="188.0" stroke="#1e293b" stroke-width="1" fill="none"/>
+<text x="66" y="192.0" fill="#94a3b8" font-size="12" text-anchor="end">100</text>
+<line x1="76" y1="84.0" x2="610" y2="84.0" stroke="#1e293b" stroke-width="1" fill="none"/>
+<text x="66" y="88.0" fill="#94a3b8" font-size="12" text-anchor="end">150</text>
+<line x1="76.0" y1="396" x2="76.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="76.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">0</text>
+<line x1="165.0" y1="396" x2="165.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="165.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">500</text>
+<line x1="254.0" y1="396" x2="254.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="254.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">1,000</text>
+<line x1="343.0" y1="396" x2="343.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="343.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">1,500</text>
+<line x1="432.0" y1="396" x2="432.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="432.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">2,000</text>
+<line x1="521.0" y1="396" x2="521.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="521.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">2,500</text>
+<line x1="610.0" y1="396" x2="610.0" y2="401" stroke="#475569" stroke-width="1" fill="none"/>
+<text x="610.0" y="417" fill="#94a3b8" font-size="12" text-anchor="middle">3,000</text>
+<line x1="76" y1="396" x2="610" y2="396" stroke="#475569" stroke-width="1.5" fill="none"/>
+<line x1="76" y1="84" x2="76" y2="396" stroke="#475569" stroke-width="1.5" fill="none"/>
+<text x="343.0" y="442" fill="#f1f5f9" font-size="13" text-anchor="middle">Total demand (veh/h)</text>
+<text x="22" y="240.0" fill="#f1f5f9" font-size="13" text-anchor="middle" transform="rotate(-90 22 240.0)">Average delay (s)</text>
+<path d="M147.2,363.1 L210.2,360.1 L273.4,358.5 L336.4,352.5 L399.4,350.1 L462.4,319.8 L525.6,233.9 L588.6,104.0" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="6 5" data-controller="fixed"/>
+<circle cx="147.2" cy="363.1" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 15.8 s at 400 veh/h</title></circle>
+<circle cx="210.2" cy="360.1" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 17.2 s at 754 veh/h</title></circle>
+<circle cx="273.4" cy="358.5" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 18.0 s at 1,109 veh/h</title></circle>
+<circle cx="336.4" cy="352.5" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 20.9 s at 1,463 veh/h</title></circle>
+<circle cx="399.4" cy="350.1" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 22.1 s at 1,817 veh/h</title></circle>
+<circle cx="462.4" cy="319.8" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 36.6 s at 2,171 veh/h</title></circle>
+<circle cx="525.6" cy="233.9" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 78.0 s at 2,526 veh/h</title></circle>
+<circle cx="588.6" cy="104.0" r="3.5" fill="#94a3b8" stroke="#0f172a" stroke-width="1.5"><title>fixed: 140.4 s at 2,880 veh/h</title></circle>
+<path d="M147.2,377.7 L210.2,372.2 L273.4,367.9 L336.4,364.8 L399.4,359.3 L462.4,351.2 L525.6,332.5 L588.6,233.1" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-controller="actuated"/>
+<circle cx="147.2" cy="377.7" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 8.8 s at 400 veh/h</title></circle>
+<circle cx="210.2" cy="372.2" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 11.4 s at 754 veh/h</title></circle>
+<circle cx="273.4" cy="367.9" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 13.5 s at 1,109 veh/h</title></circle>
+<circle cx="336.4" cy="364.8" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 15.0 s at 1,463 veh/h</title></circle>
+<circle cx="399.4" cy="359.3" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 17.7 s at 1,817 veh/h</title></circle>
+<circle cx="462.4" cy="351.2" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 21.5 s at 2,171 veh/h</title></circle>
+<circle cx="525.6" cy="332.5" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 30.5 s at 2,526 veh/h</title></circle>
+<circle cx="588.6" cy="233.1" r="3.5" fill="#4ade80" stroke="#0f172a" stroke-width="1.5"><title>actuated: 78.3 s at 2,880 veh/h</title></circle>
+<path d="M147.2,370.2 L210.2,367.1 L273.4,362.9 L336.4,359.7 L399.4,353.6 L462.4,342.7 L525.6,329.6 L588.6,289.1" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-controller="webster"/>
+<circle cx="147.2" cy="370.2" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 12.4 s at 400 veh/h</title></circle>
+<circle cx="210.2" cy="367.1" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 13.9 s at 754 veh/h</title></circle>
+<circle cx="273.4" cy="362.9" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 15.9 s at 1,109 veh/h</title></circle>
+<circle cx="336.4" cy="359.7" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 17.4 s at 1,463 veh/h</title></circle>
+<circle cx="399.4" cy="353.6" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 20.4 s at 1,817 veh/h</title></circle>
+<circle cx="462.4" cy="342.7" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 25.6 s at 2,171 veh/h</title></circle>
+<circle cx="525.6" cy="329.6" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 31.9 s at 2,526 veh/h</title></circle>
+<circle cx="588.6" cy="289.1" r="3.5" fill="#38bdf8" stroke="#0f172a" stroke-width="1.5"><title>webster: 51.4 s at 2,880 veh/h</title></circle>
+<path d="M147.2,361.3 L210.2,366.0 L273.4,367.0 L336.4,364.8 L399.4,358.0 L462.4,348.1 L525.6,328.7 L588.6,295.0" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" data-controller="maxpressure"/>
+<circle cx="147.2" cy="361.3" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 16.7 s at 400 veh/h</title></circle>
+<circle cx="210.2" cy="366.0" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 14.4 s at 754 veh/h</title></circle>
+<circle cx="273.4" cy="367.0" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 14.0 s at 1,109 veh/h</title></circle>
+<circle cx="336.4" cy="364.8" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 15.0 s at 1,463 veh/h</title></circle>
+<circle cx="399.4" cy="358.0" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 18.3 s at 1,817 veh/h</title></circle>
+<circle cx="462.4" cy="348.1" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 23.0 s at 2,171 veh/h</title></circle>
+<circle cx="525.6" cy="328.7" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 32.4 s at 2,526 veh/h</title></circle>
+<circle cx="588.6" cy="295.0" r="3.5" fill="#fbbf24" stroke="#0f172a" stroke-width="1.5"><title>maxpressure: 48.6 s at 2,880 veh/h</title></circle>
+<text x="638" y="90" fill="#94a3b8" font-size="12">at 2,880 veh/h</text>
+<line x1="638" y1="116" x2="660" y2="116" stroke="#fbbf24" stroke-width="3" fill="none"/>
+<text x="668" y="120" fill="#f1f5f9" font-size="13" font-weight="600">maxpressure</text>
+<text x="668" y="135" fill="#94a3b8" font-size="12">48.6 s</text>
+<line x1="638" y1="154" x2="660" y2="154" stroke="#38bdf8" stroke-width="3" fill="none"/>
+<text x="668" y="158" fill="#f1f5f9" font-size="13" font-weight="600">webster</text>
+<text x="668" y="173" fill="#94a3b8" font-size="12">51.4 s</text>
+<line x1="638" y1="192" x2="660" y2="192" stroke="#4ade80" stroke-width="3" fill="none"/>
+<text x="668" y="196" fill="#f1f5f9" font-size="13" font-weight="600">actuated</text>
+<text x="668" y="211" fill="#94a3b8" font-size="12">78.3 s</text>
+<line x1="638" y1="230" x2="660" y2="230" stroke="#94a3b8" stroke-width="3" fill="none" stroke-dasharray="6 5"/>
+<text x="668" y="234" fill="#f1f5f9" font-size="13" font-weight="600">fixed</text>
+<text x="668" y="249" fill="#94a3b8" font-size="12">140.4 s</text>
+<text x="784" y="442" fill="#475569" font-size="11" text-anchor="end">greenwave sweep</text>
+</svg>

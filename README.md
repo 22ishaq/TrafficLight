@@ -39,6 +39,7 @@ pip install -e ".[dev]"
 greenwave benchmark --duration 3600 --seeds 5
 greenwave webster --flows 0.12,0.12,0.08,0.08
 greenwave live --controller maxpressure     # animated junction in the terminal
+greenwave sweep --out docs/sweep.svg        # delay-vs-demand chart (SVG)
 greenwave classic                            # needs Tk (python3-tk on Linux)
 
 # Tests
@@ -105,11 +106,11 @@ demand  N 0.12  S 0.12  E 0.08  W 0.08 veh/s
    Controller   Avg delay  Max delay   Throughput  Avg queue  Delay vs fixed
 ─  ───────────  ─────────  ─────────  ───────────  ─────────  ──────────────
    fixed           19.2 s       62 s  1,455 veh/h    7.9 veh        baseline
-★  actuated        15.2 s       59 s  1,453 veh/h    6.3 veh         -20.6 %
-   maxpressure     17.3 s       76 s  1,449 veh/h    7.1 veh          -9.8 %
+   actuated        15.2 s       59 s  1,453 veh/h    6.3 veh         -20.6 %
+★  maxpressure     14.6 s       68 s  1,454 veh/h    6.0 veh         -24.1 %
    webster         16.9 s       73 s  1,457 veh/h    6.9 veh         -12.0 %
 
-★ actuated wins: 21 % less delay than fixed.
+★ maxpressure wins: 24 % less delay than fixed.
 ```
 
 When demand is lopsided, fixed-time control falls apart and the adaptive controllers reduce average delay by about three quarters:
@@ -118,12 +119,16 @@ When demand is lopsided, fixed-time control falls apart and the adaptive control
 $ greenwave benchmark --duration 1800 --seeds 3 --demand 0.2,0.18,0.05,0.06
    Controller   Avg delay  Max delay   Throughput  Avg queue  Delay vs fixed
    fixed           61.3 s      321 s  1,689 veh/h   30.3 veh        baseline
-★  actuated        15.8 s       62 s  1,745 veh/h    7.8 veh         -74.3 %
-   maxpressure     16.1 s       75 s  1,742 veh/h    8.0 veh         -73.8 %
+   actuated        15.8 s       62 s  1,745 veh/h    7.8 veh         -74.3 %
+★  maxpressure     14.8 s       89 s  1,752 veh/h    7.3 veh         -75.8 %
    webster         18.7 s      134 s  1,744 veh/h    9.2 veh         -69.5 %
 ```
 
-<!-- SWEEP -->
+### Delay vs demand
+
+`greenwave sweep` raises total demand from light traffic up to near-saturation. Below about 2,000 veh/h every strategy performs about the same. Above that, fixed-time delay grows rapidly, and max-pressure, which was designed for heavy traffic, ends up best.
+
+<p align="center"><img src="docs/sweep.svg" alt="Average delay vs demand for each controller: fixed-time rises steeply past 2,000 veh/h while max-pressure stays lowest" width="760"></p>
 
 ## Project layout
 
@@ -140,6 +145,7 @@ greenwave/           Python package (stdlib only)
   pelican.py         Pelican crossing state machine
   classic.py         Turtle GUI (the original project, reborn)
   live.py            Animated ANSI terminal view
+  report.py          Demand sweep + hand-drawn SVG chart
   cli.py             `greenwave` command line
 tests/               pytest suite
 legacy/              The original 2-file turtle script, kept for posterity

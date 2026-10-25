@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Sequence, TextIO
 
 from . import __version__
@@ -53,6 +55,13 @@ def _positive(kind: type[float] | type[int]):
         return value
 
     return convert
+
+
+def _fraction(text: str) -> float:
+    value = float(text)
+    if not 0 < value < 1:
+        raise argparse.ArgumentTypeError(f"must be between 0 and 1, got {text}")
+    return value
 
 
 class _Style:
@@ -184,18 +193,44 @@ def _cmd_controllers(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_classic(args: argparse.Namespace) -> int:
+def _cmd_sweep(args: argparse.Namespace) -> int:
+    from .report import demand_levels, render_svg, sweep
+
+    levels = demand_levels(args.levels, low=args.low, high=args.high)
+    seeds = list(range(args.seed, args.seed + args.seeds))
+    data = sweep(args.controllers, levels, args.duration, seeds, split=args.split)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(render_svg(data), encoding="utf-8")
+
+    width = max(map(len, args.controllers))
+    print(f"{'veh/h'.rjust(width)}  " + "  ".join(f"{lv:>7,.0f}" for lv in levels))
+    for name in args.controllers:
+        print(f"{name.rjust(width)}  " + "  ".join(f"{d:>6.1f}s" for d in data.delays[name]))
+    print(f"\nwrote {out} ({len(levels)} demand levels × {len(args.controllers)} controllers)")
+    return 0
+
+
+def _run_module(module: str, argv: Sequence[str]) -> int:
+    """Forward ``argv`` to ``greenwave.<module>.main``, importing it lazily."""
     try:
-        from . import classic  # lazy: needs tkinter, which headless Pythons may lack
+        mod = importlib.import_module(f"{__package__ or 'greenwave'}.{module}")
     except ImportError as exc:  # pragma: no cover - depends on the environment
-        print(f"error: the classic GUI could not be loaded ({exc}).", file=sys.stderr)
+        print(f"error: greenwave {module} could not be loaded ({exc}).", file=sys.stderr)
         return 1
     try:
-        result = classic.main(args.rest)
-    except ImportError as exc:  # pragma: no cover - depends on the environment
-        print(f"error: the classic GUI needs Tk/turtle support ({exc}).", file=sys.stderr)
+        result = mod.main(list(argv))
+    except ImportError as exc:  # pragma: no cover - e.g. tkinter missing for classic
+        print(f"error: greenwave {module} needs an unavailable module ({exc}).", file=sys.stderr)
         return 1
     return int(result or 0)
+
+
+#: Sub-commands whose arguments are handed untouched to another module's ``main``.
+_PASSTHROUGH: dict[str, tuple[str, str]] = {
+    "live": ("live", "animated junction in the terminal (--controller --speed --duration --seed --demand ...)"),
+    "classic": ("classic", "open the classic turtle pelican-crossing simulation (needs tkinter)"),
+}
 
 
 # ---------------------------------------------------------------------- parser
@@ -250,14 +285,34 @@ def build_parser() -> argparse.ArgumentParser:
     ctl = sub.add_parser("controllers", help="list available controllers")
     ctl.set_defaults(func=_cmd_controllers)
 
-    classic = sub.add_parser("classic", help="open the classic turtle pelican-crossing simulation")
-    classic.add_argument("rest", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
-    classic.set_defaults(func=_cmd_classic)
+    sw = sub.add_parser("sweep", help="sweep demand from light to near-saturation and draw an SVG chart")
+    sw.add_argument("--out", default="docs/sweep.svg", help="output SVG path (default docs/sweep.svg)")
+    sw.add_argument("--duration", type=_positive(float), default=1800.0, help="simulated seconds per run (default 1800)")
+    sw.add_argument("--seeds", type=_positive(int), default=3, help="number of random seeds (default 3)")
+    sw.add_argument("--seed", type=int, default=1, help="first seed (default 1)")
+    sw.add_argument("--levels", type=_positive(int), default=8, help="number of demand levels (default 8)")
+    sw.add_argument("--split", type=_fraction, default=0.6, help="share of demand on N/S, 0-1 (default 0.6)")
+    sw.add_argument("--low", type=_positive(float), default=400.0, help="lightest total demand veh/h (default 400)")
+    sw.add_argument("--high", type=_positive(float), default=None, help="heaviest total demand veh/h (default Y=0.8)")
+    sw.add_argument(
+        "--controllers",
+        type=parse_controllers,
+        default=list(CONTROLLERS),
+        help=f"comma-separated list (default {','.join(CONTROLLERS)})",
+    )
+    sw.set_defaults(func=_cmd_sweep)
+
+    # Listed for --help only; main() forwards their arguments before parsing.
+    for name, (_, help_text) in _PASSTHROUGH.items():
+        sub.add_parser(name, help=help_text, add_help=False)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Entry point for ``python -m greenwave`` and the ``greenwave`` script."""
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in _PASSTHROUGH:
+        return _run_module(_PASSTHROUGH[argv[0]][0], argv[1:])
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command is None:

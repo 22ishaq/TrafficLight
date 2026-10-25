@@ -95,21 +95,26 @@ class Actuated(Controller):
 
 
 class MaxPressure(Controller):
-    """Max-pressure (back-pressure) control.
+    """Max-pressure (back-pressure) control with hysteresis.
 
-    Switch when the waiting queue on the red axis exceeds the queue on the
-    green axis by more than ``threshold`` vehicles, subject to a minimum
-    green and a maximum green that guarantees service. The threshold acts as
-    hysteresis: every switch costs ~9 s of lost time, so flapping is expensive.
+    Switch when the queue waiting on the red axis outweighs the queue still
+    discharging on the green axis -- ``waiting > ratio * green_queue + threshold``
+    -- subject to a minimum green and a maximum green that guarantees service.
+    The ratio and threshold stop the signal flapping: every switch costs ~9 s
+    of lost time, which near saturation is worse than a slightly long green.
     """
 
     name = "maxpressure"
     description = "Serve the axis with the most queued vehicles"
 
-    def __init__(self, min_green: float = 12.0, max_green: float = 40.0, threshold: int = 6) -> None:
+    def __init__(
+        self, min_green: float = 10.0, max_green: float = 60.0, threshold: int = 3, ratio: float = 3.0
+    ) -> None:
         if not 0 < min_green <= max_green:
             raise ValueError("require 0 < min_green <= max_green")
-        self.min_green, self.max_green, self.threshold = min_green, max_green, threshold
+        if ratio < 0:
+            raise ValueError("ratio must be non-negative")
+        self.min_green, self.max_green, self.threshold, self.ratio = min_green, max_green, threshold, ratio
 
     def decide(self, junction: JunctionView) -> bool:
         axis = junction.green_axis
@@ -120,7 +125,7 @@ class MaxPressure(Controller):
             return False
         if junction.phase_time >= self.max_green:
             return True
-        return waiting - junction.queue_length(axis) > self.threshold
+        return waiting > self.ratio * junction.queue_length(axis) + self.threshold
 
 
 class Webster(Controller):
