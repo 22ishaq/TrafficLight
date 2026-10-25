@@ -278,8 +278,8 @@ Both engines follow the same steps after minimum green:
 |---|---|---|
 | min green | 10 s | 8 s |
 | max green | 60 s | 60 s |
-| switch rule | $q_{\text{red}} > 3\,q_{\text{green}} + 3$ (`ratio=3`, `threshold=3`) | $p_{\text{red}} - p_{\text{green}} > 2$ |
-| pressure of an axis | queued vehicles | blocked arrivals + queued vehicles (speed < 1 m/s, before the line) + **0.5 ×** moving vehicles within 60 m of the line |
+| switch rule | $q_{\text{red}} > 3\,q_{\text{green}} + 3$ (`ratio=3`, `threshold=3`) | $p_{\text{red}} > 2\,p_{\text{green}} + 2$ (`ratio=2`, `threshold=2`) |
+| pressure of an axis | queued vehicles | every vehicle on the axis that has not yet reached the stop line, moving or queued, plus any emergency vehicle waiting to enter. Blocked arrivals are left out, so one saturated road cannot build up unlimited pressure |
 | extra rule | — | switch at once if the green axis has no demand left |
 
 ### Manual (`manual`, web only)
@@ -303,7 +303,7 @@ Pressing the pedestrian button (`requestPedestrian()`) stores one request. A pre
 5. A shorter `ALL_RED` of **1 s** clears the crossing.
 6. Red+amber and green go to the axis that was due next.
 
-Each crosswalk gets 0–3 walkers with random start delays of 0–3 s. These are drawn for the picture only and do not affect vehicles. Walkers who haven't stepped off the kerb when the walk phase ends stay on the kerb.
+Each crosswalk gets 0–3 walkers with random start delays of 0–3 s. These are drawn for the picture only and do not affect vehicles. Walkers who haven't stepped off the kerb when the walk phase ends are removed and never start crossing.
 
 ### Emergency pre-emption
 
@@ -342,9 +342,9 @@ The emergency vehicle itself is an ordinary IDM vehicle with $v_0 = 18$ m/s. It 
 
 | Metric | Definition |
 |---|---|
-| `waitTime` (per vehicle) | Seconds spent below 0.5 m/s before the stop line |
-| `avgWait` | Mean `waitTime`. In `stats` it covers served vehicles only. In `summary()` (benchmarks) it also includes vehicles still before the line |
-| `maxWait` | Worst `waitTime`, counting vehicles still waiting |
+| `waitTime` (per vehicle) | Seconds spent below 0.5 m/s before the stop line, plus any time over 1 s spent blocked at the lane entry |
+| `avgWait` | Mean `waitTime`. In `stats` it covers served vehicles only. In `summary()` (benchmarks) it also includes vehicles still before the line and arrivals still blocked at the entry, with their wait so far |
+| `maxWait` | Worst `waitTime`, counting vehicles still waiting and arrivals still blocked at the entry |
 | `queue[A]` | Vehicles on approach A before the line moving below 1 m/s, plus blocked arrivals |
 | `avgQueue` | Mean queue **per approach**. The four-approach total ÷ 4 (time-averaged in `summary()`) |
 | `throughputPerMin` | Vehicles that left the map in the last 60 s |

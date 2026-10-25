@@ -62,7 +62,7 @@ python -m pytest -q
 | `E` | Send in an emergency vehicle (signal pre-emption) |
 | `M` | Manual switch (in Manual mode) |
 | `R` | Reset |
-| `T` | Toggle day / night |
+| `T` | Toggle light / dark theme (day / night scene) |
 
 What the playground does:
 
@@ -70,7 +70,7 @@ What the playground does:
 - **Signal pre-emption**: an ambulance gets a green on its approach as soon as it is safe to give one. The other approach still goes through amber and all-red first.
 - **Pedestrian scramble**: pressing the button brings in an all-red walk phase, followed by a flashing phase.
 - **Seeded and deterministic**: the same seed always produces the same traffic, so controller comparisons are fair.
-- **Benchmark**: one button runs every controller against identical traffic and highlights the winner.
+- **Benchmark**: one button runs the fixed, actuated and max-pressure controllers against identical traffic (15 simulated minutes × 3 seeds) and highlights the winner.
 
 To host the playground on **GitHub Pages**, go to *Settings → Pages* and set the source to **GitHub Actions**. Then run the *Deploy playground to Pages* workflow from the Actions tab. The `web/` folder is served as-is.
 
@@ -145,21 +145,25 @@ $ greenwave benchmark --duration 1800 --seeds 3 --demand 0.2,0.18,0.05,0.06
 
 ### Delay vs demand
 
-`greenwave sweep` raises total demand from light traffic up to near-saturation. Below about 2,000 veh/h every strategy performs about the same. Above that, fixed-time delay grows rapidly, and max-pressure, which was designed for heavy traffic, ends up best.
+`greenwave sweep` raises total demand from light traffic up to near-saturation. Below about 2,000 veh/h all strategies stay within about 9–22 s, and actuated control is best in light traffic. Above that, fixed-time delay climbs to 140 s at 2,880 veh/h while the adaptive controllers stay far lower. At the heaviest level, max-pressure (49 s) and Webster (51 s) do best.
 
-<p align="center"><img src="docs/sweep.svg" alt="Average delay vs demand for each controller: fixed-time rises steeply past 2,000 veh/h while max-pressure stays lowest" width="760"></p>
+<p align="center"><img src="docs/sweep.svg" alt="Average delay vs demand for each controller: fixed-time rises steeply past 2,000 veh/h while the adaptive controllers stay much lower" width="760"></p>
 
 ## Project layout
 
 ```
 web/                 Browser playground (ES modules, no build)
+  index.html         Junction playground
+  classic.html       Pelican crossing (js/classic.js)
   js/sim/            Pure simulation engine: IDM vehicles, signal phases, controllers, benchmark
   js/render.js       Canvas renderer (signal heads, crossings, night lighting)
+  js/main.js         UI wiring, charts and keyboard shortcuts
   tests/             node --test suite
 greenwave/           Python package (stdlib only)
   sim.py             Mesoscopic queue simulation of a 4-way junction
   controllers.py     FixedTime, Webster, Actuated, MaxPressure
   webster.py         Webster's optimal cycle & splits
+  metrics.py         Metrics dataclass
   signals.py         UK traffic-light state machine
   pelican.py         Pelican crossing state machine
   classic.py         Turtle GUI (the original project, reborn)
@@ -167,8 +171,8 @@ greenwave/           Python package (stdlib only)
   report.py          Demand sweep + hand-drawn SVG chart
   cli.py             `greenwave` command line
 tests/               pytest suite
-examples/            Write your own controller (longest-wait-first) in ~50 lines
-legacy/              The original 2-file turtle script, kept for posterity
+examples/            Write your own controller (longest-wait-first)
+legacy/              The original single-file turtle script, kept for posterity
 ```
 
 ## Write your own controller
@@ -177,7 +181,7 @@ legacy/              The original 2-file turtle script, kept for posterity
 
 ## History
 
-GreenWave began as [`legacy/trafficlight.py`](legacy/trafficlight.py), a turtle script that drew three lamps and cycled them when a button was clicked. The classic mode keeps that idea and turns it into a correct pelican crossing state machine. That rewrite also fixes three bugs in the original: the click handler was never bound, the button's hit-box was the wrong size, and a ~11-day `ontimer` delay stood in for "stay green".
+GreenWave began as [`legacy/trafficlight.py`](legacy/trafficlight.py), a turtle script that drew three lamps and cycled them when a button was clicked. The classic mode keeps that idea and turns it into a correct pelican crossing state machine. That rewrite also fixes several problems in the original: the click handler was never bound, the button's hit-box was the wrong size, a "3 second" amber actually lasted 6 s, the sequence was not the UK one (it had no red + amber), and a ~11-day `ontimer` delay stood in for "stay green".
 
 ## License
 
