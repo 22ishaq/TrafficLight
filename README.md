@@ -13,12 +13,13 @@
 
 </div>
 
-GreenWave has three parts, and all of them use the UK signal sequence (red → red + amber → green → amber):
+GreenWave has four parts, and all of them use the UK signal sequence (red → red + amber → green → amber):
 
 | | What it is | Run it |
 |---|---|---|
 | 🌐 **Web playground** | An animated four-way junction in the browser (left-hand traffic). Vehicles follow each other using the Intelligent Driver Model. You can swap controllers while it runs, press the pedestrian button, send in an ambulance, and see live charts and a benchmark table. | `cd web && python3 -m http.server` → <http://localhost:8000> |
 | 🐍 **Python research engine** | A fast, seeded queue simulation that runs hours of traffic in milliseconds. It compares Fixed-time, Webster, Actuated and Max-Pressure control. | `python -m greenwave benchmark` |
+| 🖥️ **Terminal view** | An animated ANSI drawing of the junction in your terminal, with live signal heads, queues and metrics. | `python -m greenwave live` |
 | 🕹️ **Classic mode** | The original turtle traffic light, rebuilt as a UK pelican crossing with a push-button, WAIT lamp, green man and flashing amber. | `python -m greenwave classic` |
 
 No runtime dependencies. The web app needs no build step and the Python package uses only the standard library.
@@ -37,6 +38,7 @@ cd web && python3 -m http.server 8000      # open http://localhost:8000
 pip install -e ".[dev]"
 greenwave benchmark --duration 3600 --seeds 5
 greenwave webster --flows 0.12,0.12,0.08,0.08
+greenwave live --controller maxpressure     # animated junction in the terminal
 greenwave classic                            # needs Tk (python3-tk on Linux)
 
 # Tests
@@ -65,6 +67,8 @@ What the playground does:
 - **Benchmark**: one button runs every controller against identical traffic and highlights the winner.
 
 ## Signal control strategies
+
+The models are explained in detail in [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md), including the IDM equations, Webster's formula and the max-pressure rule.
 
 ```mermaid
 stateDiagram-v2
@@ -135,6 +139,7 @@ greenwave/           Python package (stdlib only)
   signals.py         UK traffic-light state machine
   pelican.py         Pelican crossing state machine
   classic.py         Turtle GUI (the original project, reborn)
+  live.py            Animated ANSI terminal view
   cli.py             `greenwave` command line
 tests/               pytest suite
 legacy/              The original 2-file turtle script, kept for posterity
