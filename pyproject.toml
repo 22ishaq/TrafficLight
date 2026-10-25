@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greenwave"
+version = "1.0.0"
+description = "Traffic-signal simulator: compare fixed-time, actuated, max-pressure and Webster control, plus a classic UK pelican crossing."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "22ishaq" }]
+keywords = ["traffic", "simulation", "traffic-signals", "webster", "max-pressure", "turtle"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Education",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+greenwave = "greenwave.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/22ishaq/TrafficLight"
+
+[tool.setuptools]
+packages = ["greenwave"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
